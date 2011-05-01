@@ -1,0 +1,10 @@
+name: ChunkLoad
+main: plugin.x1337x.bukkit.ChunkLoad.ChunkLoad
+version: 0.1
+description: Keeps selected Chunks loaded
+authors:
+  - x1337x
+commands:
+  chunk:
+     description: Saves the current chunk to be kept on unload
+     usage: /<command> 
