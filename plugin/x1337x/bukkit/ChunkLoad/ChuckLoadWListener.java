@@ -1,10 +1,5 @@
 package plugin.x1337x.bukkit.ChunkLoad;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.logging.Level;
-
 import org.bukkit.Chunk;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.world.WorldListener;
@@ -21,6 +16,11 @@ public void onChunkUnload(ChunkUnloadEvent event){
 	int z = chunk.getZ();
 	if(!this.plugin.allowunload(x, z)){
 		event.setCancelled(true);
+		plugin.getLogger().info("Chunk @ " + x + ":" + z + "Stoped from unloading");
+	
+	}
+	else{
+		event.setCancelled(false);
 	}
 }
 

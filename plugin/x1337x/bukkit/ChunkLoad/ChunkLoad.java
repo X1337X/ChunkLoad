@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -19,8 +20,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import plugin.x1337x.bukkit.ChunkLoad.Commands.ChunkLoadCommand;
 
 public class ChunkLoad extends JavaPlugin {
+	
+	public ArrayList<String> chunks = new ArrayList<String>();
 	String dir = "plugins" + File.separator + "ChunkLoad" + File.separator;
 	String filename = "ChunkLoadData.txt";
+	File dirf = new File(dir);
 	public static final String date_format = "dd-MM-yyyy HH:mm:ss";
 	SimpleDateFormat sdf = new SimpleDateFormat(date_format);
 	File file = new File(dir + filename);
@@ -29,13 +33,23 @@ public ChuckLoadWListener wlistener = new ChuckLoadWListener(this);
 	@Override
 	public void onDisable() {
 		// TODO Auto-generated method stub
+		if(disable()){
+		getLogger().info("Saved " + chunks.size() + " Chunkks");
 		getLogger().log(Level.INFO, "ChunkLoad disabled"); 
+		}
+		else{
+			getLogger().warning("ERROR Saving Chunks!");
+		}
 	}
 
 	@Override
 	public void onEnable() {
 		// TODO Auto-generated method stub
-		registerevents();
+		if(!dirf.exists()){
+		dirf.mkdir();	
+		}
+		init();
+		loadIntoArray();
 		getLogger().log(Level.INFO, "ChunkLoad enabled");
 	}
 public Logger getLogger(){
@@ -50,33 +64,25 @@ public void init(){
 	registerevents();
 	loadcommands();
 }
-private void loadcommands() {
-	// TODO Auto-generated method stub
-	getCommand("chunk").setExecutor(new ChunkLoadCommand(this));
-}
-
-public boolean allowunload(int x,int z){
-	boolean unload = false;
+public boolean disable(){
+	boolean done = false;
 	try {
+		BufferedWriter w = new BufferedWriter(new FileWriter(this.file));
 		
-		Scanner scanner = new Scanner(this.file);
-		while(scanner.hasNextLine()){
-			String[] line = scanner.nextLine().split(":");
-			int xi = Integer.parseInt(line[0]);
-			int zi = Integer.parseInt(line[1]);
-			
-			if(zi == z && xi == x){
-				unload = false;
-			}
-			else{
-				unload = true;;
-			}
-		}
-
-	} catch (FileNotFoundException e) {
+        int position = 0;
+        int size = chunks.size();
+        while(size != position){
+        	w.write(chunks.get(position));
+    		w.newLine();
+    		position++;
+        }
+		
+		w.close();
+		done = true;
+	} catch (IOException e) {
 		// TODO Auto-generated catch block
-		this.getLogger().log(Level.WARNING, "Error Reading chunk from " + this.file.getName());
-		this.getLogger().log(Level.WARNING, "Please copy and paste this error report onto the ChunkLoad thread");
+		this.getLogger().log(Level.WARNING, "Error writing chunk to " + this.file.getName());
+		this.getLogger().log(Level.WARNING, "Please copy and paste this error onto the ChunkLoad thread");
 		this.getLogger().log(Level.WARNING, "------------BEGIN ERROR REPORT----------------------------");
 		this.getLogger().log(Level.WARNING, "Report made on " + this.getDate());
 		this.getLogger().log(Level.WARNING, "The cause of this error was : " + e.getCause());
@@ -86,7 +92,29 @@ public boolean allowunload(int x,int z){
 		this.getLogger().log(Level.WARNING, "Stack Trace : ");
 		e.printStackTrace();
 		this.getLogger().log(Level.WARNING, "-----------END ERROR REPORT--------------------------------");
+		done = false;
 	}
+if(done){
+	return true;
+}
+else{
+	return false;
+}
+}
+private void loadcommands() {
+	// TODO Auto-generated method stub
+	getCommand("chunk").setExecutor(new ChunkLoadCommand(this));
+}
+
+public boolean allowunload(int x,int z){
+	boolean unload = false;
+	String chunk = x + ":" + z;
+if(chunks.contains(chunk)){
+	unload = false;
+}
+else{
+	unload = true;
+}
 	if(unload){
 		return true;
 	}
@@ -102,14 +130,19 @@ public String getDate(){
 		  
 }
 public void writeloc(int x,int z){
+	
+}
+public void loadIntoArray(){
 	try {
-		BufferedWriter w = new BufferedWriter(new FileWriter(this.file));
-		w.write(x + ":" + z);
-		w.newLine();
-		w.close();
-	} catch (IOException e) {
+		Scanner scanner = new Scanner(this.file);
+		while(scanner.hasNextLine()){
+			String line = scanner.nextLine();
+			chunks.add(line);
+		}
+		getLogger().info("Loaded " + chunks.size() +  " Chunks into memory");
+	} catch (FileNotFoundException e) {
 		// TODO Auto-generated catch block
-		this.getLogger().log(Level.WARNING, "Error writing chunk to " + this.file.getName());
+		this.getLogger().log(Level.WARNING, "Error Reading chunks from " + this.file.getName());
 		this.getLogger().log(Level.WARNING, "Please copy and paste this error onto the ChunkLoad thread");
 		this.getLogger().log(Level.WARNING, "------------BEGIN ERROR REPORT----------------------------");
 		this.getLogger().log(Level.WARNING, "Report made on " + this.getDate());
